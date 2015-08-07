@@ -33,11 +33,11 @@ private:
     void SimpleWriteln(int comm);
 
     int getString(char *pre_string, char *post_string, char *buffer, int length) {
-        if (_cell->find(pre_string)) {
+        if (gsmSerial.find(pre_string)) {
             int index = 0;
             *buffer = 0;
             while (index < length - 1) {
-                char c = _cell->read();
+                char c = gsmSerial.read();
                 if (c == 0) {
                     return 0;   // timeout returns 0 !
                 } else if (c == *post_string) {

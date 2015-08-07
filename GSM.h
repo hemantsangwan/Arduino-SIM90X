@@ -3,9 +3,20 @@
 #include <Arduino.h>
 //#define UNO
 //#define MEGA
+#ifndef debug
+#define debug Serial
+#endif
 #define TEENSY31
 #ifndef gsmSerial
 #define gsmSerial Serial2
+#endif
+
+#if gsmSerial == Serial1
+#define SerialClass HardwareSerial
+#elif gsmSerial == Serial2
+#define SerialClass HardwareSerial2
+#else
+#define SerialClass HardwareSerial3
 #endif
 
 //#include <SoftwareSerial.h>
@@ -40,8 +51,8 @@
 //#define DEBUG_SMS_ENABLED
 
 // pins definition
-#define GSM_ON              8 // connect GSM Module turn ON to pin 77 
-#define GSM_RESET           9 // connect GSM Module RESET to pin 35
+#define GSM_ON              11 // connect GSM Module turn ON to pin 77
+#define GSM_RESET           12 // connect GSM Module RESET to pin 35
 //#define DTMF_OUTPUT_ENABLE  71 // connect DTMF Output Enable not used
 #define DTMF_DATA_VALID     14 // connect DTMF Data Valid to pin 14
 #define DTMF_DATA0          72 // connect DTMF Data0 to pin 72
@@ -160,12 +171,6 @@ public:
     byte comm_buf[COMM_BUF_LEN + 1];  // communication buffer +1 for 0x00 termination
     void InitParam(byte group);
 
-#if defined(MEGA) || defined(TEENSY31)
-    HardwareSerial* _cell = &gsmSerial;
-    #endif
-#ifdef UNO
-    SoftwareSerial _cell;
-#endif
 private:
     int _status;
     byte comm_line_status;
@@ -190,9 +195,6 @@ protected:
     int isIP(const char* cadena);
 
 public:
-#ifdef UNO
-    WideTextFinder _tf;
-#endif
     inline void setStatus(GSM_st_e status) {
         _status = status;
     }
@@ -216,14 +218,14 @@ public:
     byte WaitResp(uint16_t start_comm_tmout, uint16_t max_interchar_tmout);
     byte WaitResp(uint16_t start_comm_tmout, uint16_t max_interchar_tmout,
             char const *expected_resp_string);
-    char SendATCmdWaitResp(char const *AT_cmd_string,
+    at_resp_enum SendATCmdWaitResp(char const *AT_cmd_string,
             uint16_t start_comm_tmout, uint16_t max_interchar_tmout,
             char const *response_string,
-            byte no_of_attempts);
-    char SendATCmdWaitResp(const __FlashStringHelper *AT_cmd_string,
+            uint_least8_t no_of_attempts);
+    at_resp_enum SendATCmdWaitResp(const __FlashStringHelper *AT_cmd_string,
             uint16_t start_comm_tmout, uint16_t max_interchar_tmout,
             char const *response_string,
-            byte no_of_attempts);
+            uint_least8_t no_of_attempts);
     void Echo(byte state);
 
     //-----------------------

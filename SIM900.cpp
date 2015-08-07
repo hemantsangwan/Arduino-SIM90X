@@ -77,7 +77,7 @@ int SIMCOM900::configandwait(char* pin) {
         //while (_tf.find("+CGREG: 0,"))  // CHANGE!!!!
         {
             //connCode=_tf.getValue();
-            connCode = _cell->read();
+            connCode = gsmSerial.read();
             if ((connCode == 1) || (connCode == 5)) {
                 setStatus(READY);
 
@@ -86,7 +86,7 @@ int SIMCOM900::configandwait(char* pin) {
                 // Buah, we should take this to readCall()
                 SimpleWriteln(F("AT+CLIP=1")); //SMS text mode.
                 delay(200);
-                //_cell << "AT+QIDEACT" <<  _DEC(cr) << endl; //To make sure not pending connection.
+                //gsmSerial << "AT+QIDEACT" <<  _DEC(cr) << endl; //To make sure not pending connection.
                 //delay(1000);
 
                 return 1;
@@ -121,7 +121,7 @@ int SIMCOM900::read(char* result, int resultlength) {
     }
 
     while (this->available() > 0 && i < (resultlength - 1)) {
-        temp = _cell->read();
+        temp = gsmSerial.read();
         if (temp > 0) {
 #ifdef debug
             debug.print(temp);
@@ -146,22 +146,22 @@ int SIMCOM900::readCellData(int &mcc, int &mnc, long &lac, long &cellid) {
         return 0;
 
     //_tf.setTimeout(_GSM_DATA_TOUT_);
-    //_cell->flush();
+    //gsmSerial.flush();
     SimpleWriteln(F("AT+QENG=1,0"));
     SimpleWriteln(F("AT+QENG?"));
     if (this->WaitResp(5000, 50, "+QENG") != RX_FINISHED_STR_NOT_RECV)
         return 0;
 
     //mcc=_tf.getValue(); // The first one is 0
-    mcc = _cell->read();
+    mcc = gsmSerial.read();
     //mcc=_tf.getValue();
-    mcc = _cell->read();
+    mcc = gsmSerial.read();
     //mnc=_tf.getValue();
-    mnc = _cell->read();
+    mnc = gsmSerial.read();
     //lac=_tf.getValue();
-    lac = _cell->read();
+    lac = gsmSerial.read();
     //cellid=_tf.getValue();
-    cellid = _cell->read();
+    cellid = gsmSerial.read();
 
     this->WaitResp(5000, 50, "+OK");
     SimpleWriteln(F("AT+QENG=1,0"));
@@ -184,7 +184,7 @@ boolean SIMCOM900::readSMS(char* msg, int msglength, char* number, int nlength) 
 #ifdef UNO
     _tf.setTimeout(_GSM_DATA_TOUT_);
 #endif
-    //_cell->flush();
+    //gsmSerial.flush();
     WaitResp(500, 500);
     SimpleWriteln(F("AT+CMGL=\"REC UNREAD\",1"));
 
@@ -224,7 +224,7 @@ boolean SIMCOM900::readSMS(char* msg, int msglength, char* number, int nlength) 
         // index=_tf.getValue();
         // #endif
         // #ifdef MEGA
-        //index=_cell->read();
+        //index=gsmSerial.read();
         // #endif
         // debug.println("DEBUG");
         // #ifdef UNO
@@ -232,14 +232,14 @@ boolean SIMCOM900::readSMS(char* msg, int msglength, char* number, int nlength) 
         // #endif
         // debug.println("PRIMA");
         // #ifdef MEGA
-        // _cell->getString("\",\"", "\"", number, nlength);
+        // gsmSerial.getString("\",\"", "\"", number, nlength);
         // #endif
         // debug.println("DEBUG");
         // #ifdef UNO
         // _tf.getString("\n", "\nOK", msg, msglength);
         // #endif
         // #ifdef MEGA
-        // _cell->getString("\n", "\nOK", msg, msglength);
+        // gsmSerial.getString("\n", "\nOK", msg, msglength);
         // #endif
 
         SimpleWrite(F("AT+CMGD="));
@@ -265,11 +265,11 @@ boolean SIMCOM900::readCall(char* number, int nlength) {
         _tf.getString("", "\"", number, nlength);
 #endif
 #if defined(MEGA) || defined(TEENSY31)
-        getString((char*)"", (char*)"\"", number, nlength);
+        getString("", "\"", number, nlength);
 #endif
         SimpleWriteln(F("ATH"));
         delay(1000);
-        //_cell->flush();
+        //gsmSerial.flush();
         return true;
     };
     return false;
@@ -299,7 +299,7 @@ int SIMCOM900::setPIN(char *pin) {
 
     //_tf.setTimeout(_GSM_DATA_TOUT_);	//Timeout for expecting modem responses.
 
-    //_cell->flush();
+    //gsmSerial.flush();
 
     //AT command to set PIN.
     SimpleWrite(F("AT+CPIN="));
@@ -319,7 +319,7 @@ int SIMCOM900::changeNSIPmode(char mode) {
     //if (getStatus()!=ATTACHED)
     //    return 0;
 
-    //_cell->flush();
+    //gsmSerial.flush();
 
     SimpleWrite(F("AT+QIDNSIP="));
     SimpleWriteln(mode);
@@ -336,7 +336,7 @@ int SIMCOM900::getCCI(char *cci) {
 
     //_tf.setTimeout(_GSM_DATA_TOUT_);	//Timeout for expecting modem responses.
 
-    //_cell->flush();
+    //gsmSerial.flush();
 
     //AT command to get CCID.
     SimpleWriteln(F("AT+QCCID"));
@@ -346,7 +346,7 @@ int SIMCOM900::getCCI(char *cci) {
     _tf.getString("AT+QCCID\r\r\r\n","\r\n",cci, 21);
 #endif
 #if defined(MEGA) || defined(TEENSY31)
-    getString((char*)"AT+QCCID\r\r\r\n", (char*)"\r\n", cci, 21);
+    getString("AT+QCCID\r\r\r\n", "\r\n", cci, 21);
 #endif
 
     //Expect str_ok.
@@ -360,7 +360,7 @@ int SIMCOM900::getIMEI(char *imei) {
 
     //_tf.setTimeout(_GSM_DATA_TOUT_);	//Timeout for expecting modem responses.
 
-    //_cell->flush();
+    //gsmSerial.flush();
 
     //AT command to get IMEI.
     SimpleWriteln(F("AT+GSN"));
@@ -370,7 +370,7 @@ int SIMCOM900::getIMEI(char *imei) {
     _tf.getString("\r\n","\r\n",imei, 16);
 #endif
 #if defined(MEGA) || defined(TEENSY31)
-    getString((char*)"\r\n", (char*)"\r\n", imei, 16);
+    getString("\r\n", "\r\n", imei, 16);
 #endif
 
     //Expect str_ok.
@@ -381,17 +381,17 @@ int SIMCOM900::getIMEI(char *imei) {
 }
 
 int SIMCOM900::available() {
-    return _cell->available();
+    return gsmSerial.available();
 }
 
 uint8_t SIMCOM900::read() {
-    return _cell->read();
+    return gsmSerial.read();
 }
 
 void SIMCOM900::SimpleRead() {
     char datain;
-    if (_cell->available() > 0) {
-        datain = _cell->read();
+    if (gsmSerial.available() > 0) {
+        datain = gsmSerial.read();
         if (datain > 0) {
 #if defined(debug)
             debug.print(datain);
@@ -401,41 +401,41 @@ void SIMCOM900::SimpleRead() {
 }
 
 void SIMCOM900::SimpleWrite(char *comm) {
-    _cell->print(comm);
+    gsmSerial.print(comm);
 }
 
 void SIMCOM900::SimpleWrite(const char *comm) {
-    _cell->print(comm);
+    gsmSerial.print(comm);
 }
 
 void SIMCOM900::SimpleWrite(int comm) {
-    _cell->print(comm);
+    gsmSerial.print(comm);
 }
 
 void SIMCOM900::SimpleWrite(const __FlashStringHelper *pgmstr) {
-    _cell->print(pgmstr);
+    gsmSerial.print(pgmstr);
 }
 
 void SIMCOM900::SimpleWriteln(char *comm) {
-    _cell->println(comm);
+    gsmSerial.println(comm);
 }
 
 void SIMCOM900::SimpleWriteln(const __FlashStringHelper *pgmstr) {
-    _cell->println(pgmstr);
+    gsmSerial.println(pgmstr);
 }
 
 void SIMCOM900::SimpleWriteln(char const *comm) {
-    _cell->println(comm);
+    gsmSerial.println(comm);
 }
 
 void SIMCOM900::SimpleWriteln(int comm) {
-    _cell->println(comm);
+    gsmSerial.println(comm);
 }
 
 void SIMCOM900::WhileSimpleRead() {
     char datain;
-    while (_cell->available() > 0) {
-        datain = _cell->read();
+    while (gsmSerial.available() > 0) {
+        datain = gsmSerial.read();
         if (datain > 0) {
 #if defined(debug)
             debug.print(datain);
@@ -491,7 +491,7 @@ byte GSM::CheckRegistration(void) {
 
     if (CLS_FREE != GetCommLineStatus()) return (REG_COMM_LINE_BUSY);
     SetCommLineStatus(CLS_ATCMD);
-    _cell->println(F("AT+CREG?"));
+    gsmSerial.println(F("AT+CREG?"));
     // 5 sec. for initial comm tmout
     // 50 msec. for inter character timeout
     status = WaitResp(5000, 50);
@@ -560,9 +560,9 @@ byte GSM::CheckRegistration(void) {
  if (speaker_volume > 14) speaker_volume = 14;
  // select speaker volume (0 to 14)
  // AT+CLVL=X<CR>   X<0..14>
- _cell->print("AT+CLVL=");
- _cell->print((int)speaker_volume);
- _cell->print("\r"); // send <CR>
+ gsmSerial.print("AT+CLVL=");
+ gsmSerial.print((int)speaker_volume);
+ gsmSerial.print("\r"); // send <CR>
  // 10 sec. for initial comm tmout
  // 50 msec. for inter character timeout
  if (RX_TMOUT_ERR == WaitResp(10000, 50)) {
@@ -666,9 +666,9 @@ byte GSM::CheckRegistration(void) {
  if (CLS_FREE != GetCommLineStatus()) return (ret_val);
  SetCommLineStatus(CLS_ATCMD);
  // e.g. AT+VTS=5<CR>
- _cell->print("AT+VTS=");
- _cell->print((int)dtmf_tone);
- _cell->print("\r");
+ gsmSerial.print("AT+VTS=");
+ gsmSerial.print((int)dtmf_tone);
+ gsmSerial.print("\r");
  // 1 sec. for initial comm tmout
  // 50 msec. for inter character timeout
  if (RX_TMOUT_ERR == WaitResp(1000, 50)) {
@@ -764,9 +764,9 @@ char GSM::GetPhoneNumber(byte position, char *phone_number)
     phone_number[0] = 0; // phone number not found yet => empty string
 
     //send "AT+CPBR=XY" - where XY = position
-    _cell->print(F("AT+CPBR="));
-    _cell->print((int) position);
-    _cell->print("\r");
+    gsmSerial.print(F("AT+CPBR="));
+    gsmSerial.print((int) position);
+    gsmSerial.print("\r");
 
     // 5000 msec. for initial comm tmout
     // 50 msec. for inter character timeout
@@ -839,11 +839,11 @@ char GSM::WritePhoneNumber(byte position, char *phone_number)
     //send: AT+CPBW=XY,"00420123456789"
     // where XY = position,
     //       "00420123456789" = phone number string
-    _cell->print(F("AT+CPBW="));
-    _cell->print((int) position);
-    _cell->print(F(",\""));
-    _cell->print(phone_number);
-    _cell->print(F("\"\r"));
+    gsmSerial.print(F("AT+CPBW="));
+    gsmSerial.print((int) position);
+    gsmSerial.print(F(",\""));
+    gsmSerial.print(phone_number);
+    gsmSerial.print(F("\"\r"));
 
     // 5000 msec. for initial comm tmout
     // 50 msec. for inter character timeout
@@ -894,9 +894,9 @@ char GSM::DelPhoneNumber(byte position)
 
     //send: AT+CPBW=XY
     // where XY = position
-    _cell->print(F("AT+CPBW="));
-    _cell->print((int) position);
-    _cell->print(F("\r"));
+    gsmSerial.print(F("AT+CPBW="));
+    gsmSerial.print((int) position);
+    gsmSerial.print(F("\r"));
 
     // 5000 msec. for initial comm tmout
     // 50 msec. for inter character timeout

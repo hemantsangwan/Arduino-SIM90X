@@ -393,7 +393,7 @@ int InetGSM::dettachGPRS()
 
     //gsm._tf.setTimeout(_GSM_CONNECTION_TOUT_);
 
-    //_cell.flush();
+    //gsmSerial.flush();
 
     //GPRS dettachment.
     gsm.SimpleWriteln("AT+CGATT=0");
@@ -405,10 +405,10 @@ int InetGSM::dettachGPRS()
 
     // Commented in initial trial code!!
     //Stop IP stack.
-    //_cell << "AT+WIPCFG=0" <<  _DEC(cr) << endl;
+    //gsmSerial << "AT+WIPCFG=0" <<  _DEC(cr) << endl;
     //	if(!gsm._tf.find("OK")) return 0;
     //Close GPRS bearer.
-    //_cell << "AT+WIPBR=0,6" <<  _DEC(cr) << endl;
+    //gsmSerial << "AT+WIPBR=0,6" <<  _DEC(cr) << endl;
 
     gsm.setStatus(gsm.READY);
     return 1;
@@ -422,7 +422,7 @@ int InetGSM::connectTCP(const char* server, int port)
     //if (getStatus()!=ATTACHED)
     //return 0;
 
-    //_cell.flush();
+    //gsmSerial.flush();
 
     //Visit the remote TCP server.
     gsm.SimpleWrite("AT+CIPSTART=\"TCP\",\"");
@@ -482,9 +482,9 @@ int InetGSM::disconnectTCP()
      return 0;
      */
     //gsm._tf.setTimeout(_GSM_CONNECTION_TOUT_);
-    //_cell.flush();
+    //gsmSerial.flush();
     //Switch to AT mode.
-    //_cell << "+++" << endl;
+    //gsmSerial << "+++" << endl;
     //delay(200);
     //Close TCP client and deact.
     gsm.SimpleWriteln("AT+CIPCLOSE");
@@ -515,7 +515,7 @@ int InetGSM::connectTCPServer(int port)
      return 0;
      */
     //gsm._tf.setTimeout(_GSM_CONNECTION_TOUT_);
-    //_cell.flush();
+    //gsmSerial.flush();
     // Set port
     gsm.SimpleWrite("AT+CIPSERVER=1,");
     gsm.SimpleWriteln(port);
